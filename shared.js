@@ -9961,12 +9961,16 @@ _G.placableCreate = function(className) {
                     }
 
 
+                    // Track placement validity so the client ghost tint knows what to show
+                    this.PlaceBlocked = inPly;
+
                     if (!inPly) {
                         this.Owner = this.Placing.Owner;
                         if (typeof this.Placing.PlacingObj === 'object') {
                             this.Placing.PlacingObj = undefined;
                         }
                         this.Placing = false;
+                        this.PlaceBlocked = undefined;
                     }
 
                 } else if (plyInfo.input['C']) {
@@ -10665,7 +10669,7 @@ _G.ents.Create = function(className) {
 
                 // ── HIT FLASH (used by client renderer for red tint) ─────────
                 self.LastDamage = _G.lastTick;
-                self.HitFlash = Date.now() + 260;
+                self.HitFlash = _G.lastTick + 260;
 
                 let pain = _G.sounds.impacts.pain_ply[randInt(0, _G.sounds.impacts.pain_ply.length - 1)].cloneNode(true, self.pos);
                 pain.volume = 0.15;
@@ -12033,7 +12037,7 @@ _G.ents.Create = function(className) {
                 if (!self.ShouldRemove && typeof self.Health !== 'undefined' && typeof self.HealthMax !== 'undefined' && self.HealthMax > 0) {
                     self.Health -= dmg;
                     self.LastDamage = _G.lastTick;
-                    self.HitFlash = Date.now() + 260;
+                    self.HitFlash = _G.lastTick + 260;
 
                     // ── NPC aggro switch: if hit by a player closer than current target, switch ──
                     if (inflictor && !self.ShouldRemove) {
@@ -12314,7 +12318,7 @@ _G.ents.Create = function(className) {
                         let _timeToHit = (self.AttackSpeed + self.AttackDelay) - (_G.lastTick - self.LastAttack);
                         if (_timeToHit > 0 && _timeToHit < 400) {
                             self.AttackWarnFlash = true;
-                            self.HitFlash = Date.now() + 80; // brief orange tint (reused field)
+                            self.HitFlash = _G.lastTick + 80; // brief orange tint (reused field)
                         } else {
                             self.AttackWarnFlash = undefined;
                         }
@@ -13959,13 +13963,13 @@ function render(tFrame) {
         }
 
         // ── HIT FLASH: red overlay when entity was recently damaged ─────────
-        // HitFlash holds a future timestamp (Date.now() + 260) set on damage.
-        // While HitFlash > now, we overlay a semi-transparent red rect scaled
+        // HitFlash holds a future game tick (lastTick + 260) set on damage.
+        // While HitFlash > lastTick, we overlay a semi-transparent red rect scaled
         // to the entity bbox, giving clear feedback on both players and NPCs.
         // AttackWarnFlash uses orange to telegraph an incoming NPC strike.
         /*IF_CLIENT*/
-        if (ent.HitFlash && Date.now() < ent.HitFlash) {
-            let _hfAlpha = Math.min(0.45, 0.45 * (ent.HitFlash - Date.now()) / 200);
+        if (ent.HitFlash && _G.lastTick < ent.HitFlash) {
+            let _hfAlpha = Math.min(0.45, 0.45 * (ent.HitFlash - _G.lastTick) / 200);
             let _hfColor = ent.AttackWarnFlash ? '#ff8800' : '#ff2222';
             ctx.save();
             ctx.translate(-_rvx + _rcx, -_rvy + _rcy);
@@ -13973,6 +13977,24 @@ function render(tFrame) {
             ctx.globalAlpha = _hfAlpha;
             ctx.fillStyle   = _hfColor;
             ctx.fillRect(ent.pos[0] + ent.bbox[0], ent.pos[1] + ent.bbox[1], ent.bbox[2], ent.bbox[3]);
+            ctx.restore();
+        }
+
+        // ── PLACEMENT GHOST TINT: green = valid, red = blocked ────────────────
+        // When a placable entity is being held for placement (Placing is set),
+        // overlay a green or red tint so the player knows at a glance whether
+        // the spot is clear to build.
+        if (ent.Placing && ent.pos && ent.bbox) {
+            ctx.save();
+            ctx.translate(-_rvx + _rcx, -_rvy + _rcy);
+            ctx.scale(_rvz, _rvz);
+            ctx.globalAlpha = 0.38;
+            ctx.fillStyle   = ent.PlaceBlocked ? 'rgba(255,50,50,0.38)' : 'rgba(50,230,80,0.38)';
+            ctx.fillRect(ent.pos[0] + ent.bbox[0], ent.pos[1] + ent.bbox[1], ent.bbox[2], ent.bbox[3]);
+            ctx.globalAlpha = 0.85;
+            ctx.strokeStyle = ent.PlaceBlocked ? '#ff3232' : '#32e850';
+            ctx.lineWidth   = 2 / _rvz;
+            ctx.strokeRect(ent.pos[0] + ent.bbox[0], ent.pos[1] + ent.bbox[1], ent.bbox[2], ent.bbox[3]);
             ctx.restore();
         }
         /*IF_END*/
@@ -14394,7 +14416,16 @@ function render(tFrame) {
             }
         }
 
-        let _bhintStr  = 'E: cycle \u2502 SHIFT+E: cat \u2502 V: build \u2502 V\u00d7 select';
+        // Detect if local player currently has a ghost in the world being placed
+        let _bIsPlacing = false;
+        if (_be === _G.LocalPlayer) {
+            for (let _pi = 0; _pi < _G.ents.All.length; _pi++) {
+                if (_G.ents.All[_pi].Placing === _be) { _bIsPlacing = true; break; }
+            }
+        }
+        let _bhintStr = _bIsPlacing
+            ? 'MOVE: orient \u2502 V: confirm \u2502 C: cancel'
+            : 'E: cycle \u2502 SHIFT+E: cat \u2502 V: place \u2502 V\u2193 pickup';
         let _btext     = '\u25c4 ' + _bname + ' \u25ba';
 
         ctx.save();
@@ -14464,6 +14495,87 @@ function render(tFrame) {
         ctx.restore();
     }
     // ── END BUILD MENU HUD CARDS ─────────────────────────────────────────────
+
+    // ══ HAMMER STRUCTURE OVERLAY ══════════════════════════════════════════════
+    // When holding a hammer: draw HP bars over any damaged structure within
+    // 500 px of the local player, and highlight the nearest pickable structure
+    // (within 120 px) with a bright white pulsing outline.
+    if (_G.LocalPlayer && _G.LocalPlayer.ActiveWeapon && _G.LocalPlayer.ActiveWeapon.class === 'hammer') {
+        let _hlpX = _G.LocalPlayer.pos[0] + _G.LocalPlayer.bbox[0] + _G.LocalPlayer.bbox[2] * 0.5;
+        let _hlpY = _G.LocalPlayer.pos[1] + _G.LocalPlayer.bbox[1] + _G.LocalPlayer.bbox[3] * 0.5;
+
+        // Find nearest pickable (non-placing) structure
+        let _hlBestEnt = null, _hlBestDist = 120;
+        for (let _hli = 0; _hli < _G.ents.RenderOrder.length; _hli++) {
+            let _hle = _G.ents.RenderOrder[_hli];
+            if (!_hle.Placable || _hle.ShouldRemove || _hle.Placing) continue;
+            let _hleX = _hle.pos[0] + _hle.bbox[0] + _hle.bbox[2] * 0.5;
+            let _hleY = _hle.pos[1] + _hle.bbox[1] + _hle.bbox[3] * 0.5;
+            let _hld = Math.sqrt((_hleX - _hlpX) * (_hleX - _hlpX) + (_hleY - _hlpY) * (_hleY - _hlpY));
+            if (_hld < _hlBestDist) { _hlBestDist = _hld; _hlBestEnt = _hle; }
+        }
+
+        // Pulsing highlight outline on nearest structure
+        if (_hlBestEnt) {
+            let _pulse = 0.55 + 0.45 * Math.sin(Date.now() * 0.008);
+            ctx.save();
+            ctx.translate(-_rvx + _rcx, -_rvy + _rcy);
+            ctx.scale(_rvz, _rvz);
+            ctx.globalAlpha = _pulse;
+            ctx.strokeStyle = '#ffe066';
+            ctx.lineWidth   = 3 / _rvz;
+            ctx.strokeRect(
+                _hlBestEnt.pos[0] + _hlBestEnt.bbox[0] - 3,
+                _hlBestEnt.pos[1] + _hlBestEnt.bbox[1] - 3,
+                _hlBestEnt.bbox[2] + 6,
+                _hlBestEnt.bbox[3] + 6
+            );
+            // Small label
+            ctx.globalAlpha = _pulse * 0.9;
+            ctx.font = 'bold 11px sans-serif';
+            ctx.fillStyle = '#ffe066';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            let _upDef2 = _G.buildUpgrades && _G.buildUpgrades[_hlBestEnt.class];
+            ctx.fillText(_upDef2 ? '[V] Upgrade / Hold V: pick up' : '[V] Pick up',
+                _hlBestEnt.pos[0] + _hlBestEnt.bbox[0] + _hlBestEnt.bbox[2] * 0.5,
+                _hlBestEnt.pos[1] + _hlBestEnt.bbox[1] - 5
+            );
+            ctx.restore();
+        }
+
+        // HP bars over damaged structures within 500 px
+        for (let _hpi = 0; _hpi < _G.ents.RenderOrder.length; _hpi++) {
+            let _hpe = _G.ents.RenderOrder[_hpi];
+            if (!_hpe.Placable || _hpe.ShouldRemove || _hpe.Placing) continue;
+            if (typeof _hpe.Health === 'undefined' || typeof _hpe.HealthMax === 'undefined') continue;
+            if (_hpe.Health >= _hpe.HealthMax) continue; // only show if damaged
+            let _hpeX = _hpe.pos[0] + _hpe.bbox[0] + _hpe.bbox[2] * 0.5;
+            let _hpeY = _hpe.pos[1] + _hpe.bbox[1] + _hpe.bbox[3] * 0.5;
+            if (Math.abs(_hpeX - _hlpX) > 500 || Math.abs(_hpeY - _hlpY) > 500) continue;
+            let _hpFrac = Math.max(0, Math.min(1, _hpe.Health / _hpe.HealthMax));
+            let _hpBarW = Math.max(40, _hpe.bbox[2]);
+            let _hpBarX = _hpe.pos[0] + _hpe.bbox[0] + (_hpe.bbox[2] - _hpBarW) * 0.5;
+            let _hpBarY = _hpe.pos[1] + _hpe.bbox[1] - 8;
+            ctx.save();
+            ctx.translate(-_rvx + _rcx, -_rvy + _rcy);
+            ctx.scale(_rvz, _rvz);
+            ctx.globalAlpha = 0.85;
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.fillRect(_hpBarX, _hpBarY, _hpBarW, 5);
+            // Colour: green → yellow → red based on fraction
+            let _hpR = Math.round(255 * (1 - _hpFrac));
+            let _hpG = Math.round(220 * _hpFrac);
+            ctx.fillStyle = 'rgb(' + _hpR + ',' + _hpG + ',20)';
+            ctx.fillRect(_hpBarX, _hpBarY, _hpBarW * _hpFrac, 5);
+            ctx.globalAlpha = 0.55;
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth   = 0.5 / _rvz;
+            ctx.strokeRect(_hpBarX, _hpBarY, _hpBarW, 5);
+            ctx.restore();
+        }
+    }
+    // ── END HAMMER STRUCTURE OVERLAY ─────────────────────────────────────────
     /*IF_END*/
 
     for (var i = 0; i < _G.ents.All.length; i++) {
@@ -17833,7 +17945,7 @@ setInterval(function() {
                 return val;
             }));
             */
-}, 64)
+}, 50)
 /*IF_END*/
 
 /*IF_SERVER*/
