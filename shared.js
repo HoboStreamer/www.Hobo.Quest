@@ -12106,6 +12106,8 @@ _G.ents.Create = function(className) {
                                 _closestDist = _pd;
                                 _closestPly  = _G.ents.All[i];
                             }
+                        }
+                    }
                     if (_closestPly) {
                         self.Target = _closestPly;
                         self.TargetOffset = [randInt(0, 1) === 1 ? (66 + randInt(-10, 10)) : randInt(-32, -15), randInt(10, 50) + 10];
