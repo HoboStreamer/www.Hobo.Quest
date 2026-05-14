@@ -1,0 +1,376 @@
+.clearer { clear: both; margin: 0; padding: 0; font-size: 0; height: 0; }
+
+body {
+	font-family: Arial, sans-serif;
+	color: #2a2a2a;
+}
+
+.scratch_card {
+	position: relative;
+	margin: 100px 10px;
+	width: 696px;
+
+	-webkit-touch-callout: none; /* iOS Safari */
+	-webkit-user-select: none;   /* Chrome/Safari/Opera */
+	-khtml-user-select: none;    /* Konqueror */
+	-moz-user-select: none;      /* Firefox */
+	-ms-user-select: none;       /* Internet Explorer/Edge */
+	user-select: none;           /* Non-prefixed version, currently not supported by any browser */
+}
+
+.scratch_card.scratch_card_cells3 {
+	height: 354px;
+}
+
+.scratch_card.scratch_card_cells9 {
+	height: 667px;
+}
+
+.scratch_card_cells_container {
+	position: absolute;
+	width: 460px;
+	top: 180px;
+	left: 200px;
+}
+
+/* scratching cursor applies to the cells area, and to the whole scratchcard if we happen to be scratching */
+.scratch_card.scratching,
+.scratch_card_cells_container {
+	/*cursor: url(/assets/img/coin_cursor.png) 67 35, pointer;*/
+	/*cursor: url(/assets/img/coin_cursor2.png) 70 37, pointer;*/
+	/*cursor: url(/assets/img/coin_cursor3.png) 100 20, pointer;*/
+	cursor: url(/assets/img/coin_cursor4.png) 6 20, pointer;
+}
+
+.scratch_card_scratch_area_image {
+	width: 128px; height:128px;
+	display: none;
+}
+
+.scratch_card_cell {
+	width: 128px; height: 128px;
+	margin: 2px; 
+	border: 10px solid transparent;
+	border-radius: 10px;
+	position: relative;
+	float: left;
+}
+
+.scratch_card_cell.opened {
+	border-color: #dddd00;
+}
+
+.scratch_card_cell.complete {
+	border-color: #00bb00;
+}
+
+.scratch_card_cell.denied {
+	border-color: #bb0000;
+}
+
+.scratch_card_cell_icon {
+	width: 128px; height: 128px;
+}
+
+.scratch_card_cell .cnv_scratch {
+	position: absolute;
+	top: 0; left: 0; width: 100%; height: 100%;
+	z-index: 10;
+}
+
+.theme .scratch_card_cell_icon.icon_1 { background-position: 0 0; }
+.theme .scratch_card_cell_icon.icon_2 { background-position: 0 -128px; }
+.theme .scratch_card_cell_icon.icon_3 { background-position: 0 -256px; }
+.theme .scratch_card_cell_icon.icon_4 { background-position: 0 -384px; }
+.theme .scratch_card_cell_icon.icon_5 { background-position: 0 -512px; }
+.theme .scratch_card_cell_icon.icon_6 { background-position: 0 -640px; }
+.theme .scratch_card_cell_icon.icon_7 { background-position: 0 -768px; }
+.theme .scratch_card_cell_icon.icon_8 { background-position: 0 -896px; }
+.theme .scratch_card_cell_icon.icon_9 { background-position: 0 -1024px; }
+.theme .scratch_card_cell_icon.icon_10 { background-position: 0 -1152px; }
+.theme .scratch_card_cell_icon.icon_11 { background-position: 0 -1280px; }
+.theme .scratch_card_cell_icon.icon_12 { background-position: 0 -1408px; }
+.theme .scratch_card_cell_icon.icon_13 { background-position: 0 -1536px; }
+.theme .scratch_card_cell_icon.icon_14 { background-position: 0 -1664px; }
+.theme .scratch_card_cell_icon.icon_15 { background-position: 0 -1792px; }
+.theme .scratch_card_cell_icon.icon_16 { background-position: 0 -1920px; }
+.theme .scratch_card_cell_icon.icon_17 { background-position: 0 -2048px; }
+.theme .scratch_card_cell_icon.icon_18 { background-position: 0 -2176px; }
+.theme .scratch_card_cell_icon.icon_19 { background-position: 0 -2304px; }
+.theme .scratch_card_cell_icon.icon_20 { background-position: 0 -2432px; }
+.theme .scratch_card_cell_icon.icon_21 { background-position: 0 -2560px; }
+
+.scratch_card_dialog_overlay {
+	position: absolute;
+	top: 0; left: 0; width: 100%; height: 100%;
+	z-index: 10;
+	background-color: black;
+	opacity: 0.7;
+	display: none;
+}
+
+.scratch_card_dialog {
+	position: absolute;
+	width: 630px;
+	left: 33px;
+	z-index: 100;
+}
+
+.scratch_card.scratch_card_cells3 .scratch_card_dialog {
+	height: 332px;
+	top: 10px;
+	background: url(/assets/img/dialog_bg_small.png) 0 0 no-repeat;
+}
+
+.scratch_card.scratch_card_cells9 .scratch_card_dialog {
+	height: 418px;
+	top: 80px;
+	background: url(/assets/img/dialog_bg_large.png) 0 0 no-repeat;
+}
+
+.scratch_card_dialog h1 {
+	margin: 55px 80px 30px 105px;
+	font-size: 40px;
+	text-align: center;
+	text-shadow: #dbb772 2px 3px 1px;
+}
+
+.scratch_card.scratch_card_cells9 .scratch_card_dialog h1 {
+	margin-top: 70px;
+}
+
+.scratch_card_dialog p {
+	margin: 20px 100px 20px 125px;
+	text-align: center;
+}
+
+.scratch_card_dialog .scratch_card_dialog_buttons {
+	position: absolute;
+	height: 61px;
+	bottom: 15px;
+	left: 105px; right: 80px;
+	text-align: center;
+}
+
+.scratch_card.scratch_card_cells9 .scratch_card_dialog .scratch_card_dialog_buttons {
+	bottom: 45px;
+}
+
+.scratch_card_dialog .scratch_card_dialog_button {
+	display: inline-block;
+	height: 60px; width: 160px;
+	margin: 0 10px;
+	cursor: pointer;
+	text-indent: -9999px;
+}
+
+.scratch_card_dialog .scratch_card_dialog_button.scratch_card_dialog_button_play_now { background: url(/assets/img/dialog_btn_green_play_now.png) 0 0 no-repeat; }
+.scratch_card_dialog .scratch_card_dialog_button.scratch_card_dialog_button_play_again { background: url(/assets/img/dialog_btn_green_close.png) 0 0 no-repeat; }
+.scratch_card_dialog .scratch_card_dialog_button.scratch_card_dialog_button_refresh { background: url(/assets/img/dialog_btn_red_refresh.png) 0 0 no-repeat; }
+.scratch_card_dialog .scratch_card_dialog_button.scratch_card_dialog_button_collect_prize {
+    background: url(/assets/img/dialog_btn_green_collect_prize.png) 0 0 no-repeat;
+	width: 201px;
+}
+.scratch_card_dialog .scratch_card_dialog_button.scratch_card_dialog_button_load_balance {
+    background: url(/assets/img/dialog_btn_red_load_balance.png) 0 0 no-repeat;
+	width: 184px;
+}
+
+
+#game_container {
+    min-width: 1000px; /* because slick otherwise is unhappy when making things narrower otherwise */
+}
+
+.game_panel {
+    height: 800px !important; /* for some reason, slick the carousel is breaking the height... */
+    position: fixed;
+    left: 0;
+    right: 0;
+}
+
+.game_panel .scratch_card { margin: 0 auto ; }
+#game_panel_1 .theme { padding-top: 250px; }
+#game_panel_2 .theme { padding-top: 100px; }
+#game_panel_3 .theme { padding-top: 100px; }
+#game_panel_4 .theme { padding-top: 100px; }
+#game_panel_5 .theme { padding-top: 100px; }
+#game_panel_6 .theme { padding-top: 100px; }
+#game_panel_7 .theme { padding-top: 250px; }
+.scratch_card.scratch_card_cells3:before {
+    content: " ";
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    top: 12px;
+    bottom: 12px;
+    background-color: red;
+    display: inline-block;
+    box-shadow: 0px 0px 30px 10px rgba(0,0,0,0.8);
+    z-index: -1;
+}
+
+#game_panels_after_tour {
+    height: 800px;
+    position: relative;
+}
+
+.scratch_card_dialog .scratch_card_dialog_button {
+    /* text-indent: -9999px doesn't work when you put a bunch of scratchcards side by side on a carousel */
+    font-size: 0;
+}
+
+
+.slick-arrow {
+    z-index: 100000;
+    background-color: #002d4b;
+    width: 65px; height: 60px;
+    border-radius: 3px;
+}
+.slick-prev { left: -5px; }
+.slick-next { right: -5px; }
+
+.slick-arrow:hover { background-color: #004a74; }
+.slick-arrow:focus { background-color: #002d4b; }
+
+.slick-prev:before, .slick-next:before {
+    font-size: 40px;
+}
+.slick-prev:before { content: "<" }
+.slick-next:before { content: ">" }
+
+.theme_magic_lamp .scratch_card.scratch_card_cells3 {
+	background: url(/assets/img/magic_lamp/bg_3by1.png) 0 0 no-repeat;
+}
+
+.theme_magic_lamp .scratch_card.scratch_card_cells9 {
+	background: url(/assets/img/magic_lamp/bg_3by3.png) 0 0 no-repeat;
+}
+
+.theme_magic_lamp .scratch_card_scratch_area_image {
+	background: url(/assets/img/magic_lamp/scratch_area1.png) 0 0 no-repeat;
+}
+
+.theme_magic_lamp .scratch_card_cell_icon {
+	background: url(/assets/img/magic_lamp/icons.png) 0 9999px repeat-x;
+	background-color: rgba(0,0,0,0.3);
+}
+
+.theme_pirates .scratch_card.scratch_card_cells3 {
+	background: url(/assets/img/pirates/bg_3by1.png) 0 0 no-repeat;
+}
+
+.theme_pirates .scratch_card.scratch_card_cells9 {
+	background: url(/assets/img/pirates/bg_3by3.png) 0 0 no-repeat;
+}
+
+.theme_pirates .scratch_card_scratch_area_image {
+	background: url(/assets/img/pirates/scratch_area1.png?v=2) 0 0 no-repeat;
+}
+
+.theme_pirates .scratch_card_cell_icon {
+	background: url(/assets/img/pirates/icons.png) 0 9999px repeat-x;
+}
+
+.theme_mine .scratch_card.scratch_card_cells3 {
+	background: url(/assets/img/mine/bg_3by1.png) 0 0 no-repeat;
+}
+
+.theme_mine .scratch_card.scratch_card_cells9 {
+	background: url(/assets/img/mine/bg_3by3.png) 0 0 no-repeat;
+}
+
+.theme_mine .scratch_card_scratch_area_image {
+	background: url(/assets/img/mine/scratch_area1.png) 0 0 no-repeat;
+}
+
+.theme_mine .scratch_card_cell_icon {
+	background: url(/assets/img/mine/icons.png) 0 9999px repeat-x;
+	background-color: rgba(0,0,0,0.3);
+}
+
+.theme_slots .scratch_card.scratch_card_cells3 {
+	background: url(/assets/img/slots/bg.png) 0 0 no-repeat;
+	height: 667px;
+}
+
+.theme_slots .scratch_card.scratch_card_cells9 {
+	background: none; /* This is not meant to be a thing!!!! */
+}
+
+.theme_slots .scratch_card.scratch_card_cells9:after {
+	content: "Sadly, the slots theme doesn't work with 9-cell games, only 3-cell. Sorry!";
+	font-size: 42px; text-align: center;
+}
+
+.theme_slots .scratch_card.scratch_card_cells9 .scratch_card_cells_container {
+	display: none;
+}
+
+.theme_slots .scratch_card_cells_container {
+	left: 132px;
+	top: 363px;
+}
+
+.theme_slots .scratch_card_cell {
+	border-width: 6px;
+	margin-right: 1px;
+}
+
+.theme_slots .scratch_card_scratch_area_image {
+	background: url(/assets/img/slots/scratch_area.png) 0 0 no-repeat;
+}
+
+.theme_slots .scratch_card_cell_icon {
+	background: url(/assets/img/slots/icons.png) 0 9999px repeat-x;
+	background-color: transparent;
+}
+
+
+
+.theme_slots .scratch_card.scratch_card_cells9 .scratch_card_dialog_overlay,
+.theme_slots .scratch_card.scratch_card_cells9 .scratch_card_dialog {
+	background: none; /* don't show the dialog, show the message behind saying no */
+	margin-left: -9999px;
+}
+
+.theme_slots .scratch_card.scratch_card_cells3 .scratch_card_dialog {
+	width: 664px; height: 472px;
+	top: 80px;
+	background-image: url(/assets/img/slots/dialog_bg_large.png);
+	color: white;
+}
+
+.theme_slots .scratch_card_dialog h1 {
+	margin: 95px 65px 35px 110px;
+	color: #fbd768;
+	text-shadow: black 2px 3px 1px;
+}
+
+.theme_slots .scratch_card_dialog p {
+	margin: 20px 130px 20px 165px;
+}
+
+.theme_slots .scratch_card_dialog .scratch_card_dialog_buttons {
+	bottom: 90px;
+}
+
+
+.theme_slots .scratch_card_dialog .scratch_card_dialog_button {
+	height: 65px; width: 224px;
+	cursor: pointer;
+	text-indent: -9999px;
+	margin: 0 10px;
+}
+
+.theme_slots .scratch_card_dialog .scratch_card_dialog_button.scratch_card_dialog_button_play_now { background: url(/assets/img/slots/dialog_btn_green_play_now.png) 0 0 no-repeat; }
+.theme_slots .scratch_card_dialog .scratch_card_dialog_button.scratch_card_dialog_button_play_again { background: url(/assets/img/slots/dialog_btn_green_close.png) 0 0 no-repeat; }
+.theme_slots .scratch_card_dialog .scratch_card_dialog_button.scratch_card_dialog_button_refresh { background: url(/assets/img/slots/dialog_btn_red_refresh.png) 0 0 no-repeat; }
+.theme_slots .scratch_card_dialog .scratch_card_dialog_button.scratch_card_dialog_button_collect_prize {
+	background: url(/assets/img/slots/dialog_btn_green_collect_prize.png) 0 0 no-repeat;
+	width: 261px;
+}
+.theme_slots .scratch_card_dialog .scratch_card_dialog_button.scratch_card_dialog_button_load_balance {
+	background: url(/assets/slots/dialog_btn_red_load_balance.png) 0 0 no-repeat;
+	width: 254px;
+}
+

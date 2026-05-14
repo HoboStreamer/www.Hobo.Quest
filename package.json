@@ -1,0 +1,24 @@
+{
+  "name": "2dworld",
+  "version": "4.2.0",
+  "description": "A game",
+  "main": "shared.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@node-minify/core": "^8.0.6",
+    "@node-minify/uglify-js": "^8.0.6",
+    "express": "^4.18.2",
+    "glob": "^10.3.3",
+    "isomorphic-ws": "^5.0.0",
+    "moment": "^2.29.4",
+    "random-word-slugs": "^0.1.7",
+    "dotenv": "^16.3.1"
+  }
+}

@@ -1,0 +1,723 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Hobo.Quest</title>
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+        <link rel="manifest" href="/site.webmanifest">
+        <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5ba4d5">
+        <meta name="msapplication-TileColor" content="#da532c">
+        <meta name="theme-color" content="#ffffff">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+        <style>
+            html, body { padding:0; margin:0; }
+
+            body {
+                background:#407382;
+                background: url(/assets/img/water.png);
+                overflow:hidden;
+            }
+
+            #message {
+                position:absolute;
+                z-index:9;
+                left:6px;
+                top:2px;
+                font-size:50px;
+                font-family:"Open Sans", sans-serif;
+                font-weight:700;
+                transition:opacity 700ms ease;
+                color: #fff;
+                text-shadow: 0px 0px 6px rgba(0,0,0,0.8), 2px 2px 8px rgba(0,0,0,0.85);
+            }
+
+            canvas {
+                position:fixed;
+                top:0;
+                right:0;
+                bottom:0;
+                left:0;
+            }
+#chatbox, input#chatbox-input {
+    position: fixed;
+    left: 8px;
+    bottom: 38px;
+    width: 380px;
+    height: 140px;
+    font-size: 20px;
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    border: 2px solid rgba(255,255,255,0.5);
+    padding: 2px 2px 2px 6px;
+    border-top-right-radius: 6px;
+    border-top-left-radius: 6px;
+    font-family:"Open Sans";
+    font-weight:400;
+    box-shadow:inset 0px 0px 6px rgba(0,0,0,0.8);
+}
+
+#chatbox, input#chatbox-input, #chatbox-in {
+    transition:background 400ms ease, box-shadow 400ms ease, opacity 400ms ease, border 400ms ease;
+    opacity:0.75;
+}
+
+
+#chatbox.hidden #chatbox-input {
+    opacity:0;
+}
+
+#chatbox.hidden {
+    background:transparent;
+    border:0;
+    box-shadow:none;
+}
+
+
+
+#chatbox-in {
+    position:relative;
+    display:block;
+    width:100%;
+    height:100%;
+    overflow-x:hidden;
+    overflow-y:auto;
+}
+
+#chatbox-in:hover {
+    opacity:1.0;
+}
+
+#chatbox-in .msg {
+    margin:0px 0 -2px 0;
+    transition:opacity 400ms ease;
+}
+
+#chatbox.hidden #chatbox-in .msg {
+    opacity:0;
+}
+
+#chatbox.hidden #chatbox-in .msg.new {
+    opacity:0.9;
+}
+
+#chatbox-in .name {
+    font-weight:600;
+    text-shadow:1px 1px 3px #000;
+}
+
+input#chatbox-input {
+    height:26px;
+    display:block;
+    position:absolute;
+    bottom:-38px;
+    left:-2px;
+    right:0;
+    margin:0;
+    border-top-right-radius: 0px;
+    border-top-left-radius: 0px;
+    border-bottom-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    padding:2px 2px 6px 6px;
+}
+
+input#chatbox-input:hover {
+    border-color:rgba(255,255,255,0.8);
+    opacity:1;
+}
+
+input#chatbox-input:focus {
+    border-color:rgba(255,255,255,1);
+    opacity:1;
+    border-top-right-radius: 0px;
+    border-top-left-radius: 0px;
+    border-bottom-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    outline:0;
+}
+div#paused {
+    position:fixed;
+    left:0;
+    top:0;
+    right:0;
+    bottom:0;
+    backdrop-filter: blur(10px);
+    user-select: none !important;
+    transition:opacity 400ms ease;
+    z-index:999999999999999;
+}
+
+#paused span, #paused b {
+    display:block;
+    text-align:center;
+    font-size:60px;
+    font-family:"Open Sans";
+    color:#fff;
+    text-shadow:2px 2px 6px #000;
+    font-weight:600;
+}
+
+#paused span {
+    position:relative;
+    top:50%;
+    margin-top:-110px;
+    height:220px;
+}
+
+#paused.hidden {
+    opacity:0;
+}
+
+#paused b {
+    font-size:30px;
+    font-weight:500;
+}
+
+#buttons {
+    right:3px;
+    bottom:9px;
+    position:fixed;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+     -khtml-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
+}
+
+#buttons i {
+    font-size:28px;
+    padding:4px;
+    cursor:pointer;
+    color:#fff;
+    text-shadow:1px 1px 6px #000;
+    transition:color 400ms ease, background 400ms ease;
+    border-radius:6px;
+}
+
+#buttons i:hover {
+    color:#000;
+    background:rgba(255,255,255,0.8);
+}
+
+#gamepad-confirm {
+    padding:0px 4px;
+    border-radius:6px;
+}
+
+div#gamepad-menu {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    backdrop-filter: blur(14px);
+    user-select: none !important;
+    transition: opacity 400ms ease;
+    z-index: 999999999999999;
+    background-color:rgba(0,0,0,0.25);
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+     -khtml-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
+}
+
+
+#gamepad-menu .main {
+    display:block;
+    text-align:center;
+    font-size:60px;
+    font-family:"Open Sans";
+    color:#fff;
+    text-shadow:2px 2px 6px #000;
+    font-weight:600;
+}
+
+#gamepad-menu .main {
+    position: relative;
+    top: calc(50% - 110px);
+}
+
+#gamepad-menu.hidden {
+    opacity:0;
+}
+
+#gamepad-menu .small {
+    font-size:30px;
+    font-weight:500;
+    display:block;
+}
+
+
+#gamepad-menu button {
+    position: relative;
+    cursor:pointer;
+    font-size: 22px;
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    border: 2px solid rgba(255,255,255,0.7);
+    padding: 3px 8px;
+    border-radius: 6px;
+    top: -26px;
+}
+
+#gamepad-title {
+    display:block;
+}
+
+#gamepad-menu .game-icon {
+    display:inline-block;
+}
+
+#gamepad-menu .game-icon-keyboard {
+    font-size: 50px;
+    position: relative;
+    margin-bottom: -10px;
+    margin-top: -23px;
+    top: 13px;
+}
+#gamepad-styles img {
+    padding:10px 12px;
+    border:2px solid rgba(255,255,255,0.7);
+    background:rgba(0,0,0,0.0);
+    border-radius:8px;
+    transition:transform 400ms ease, background 400ms ease, border 400ms ease;
+    margin-right:6px;
+    margin-left:6px;
+    margin-top:5px;
+}
+
+#gamepad-styles img.active {
+    border-color:#fff;
+    background:rgba(255,255,255,0.4);
+    transform:scale(1.07);
+}
+
+div#settings-menu {
+    position:fixed;
+    left:0;
+    top:0;
+    right:0;
+    bottom:0;
+    background:rgba(0,0,0,0.2);
+    backdrop-filter: blur(10px);
+    text-align:center;
+    z-index:99999;
+    transition:opacity 400ms ease, transform 400ms ease;
+}
+
+#settings-menu.hidden {
+    opacity:0;
+}
+
+#settings-menu .main {
+    top:50%;
+    height:400px;
+    width:400px;
+    position:relative;
+    display:block;
+    margin:0 auto;
+    margin-top:-200px;
+    background:rgba(0,0,0,0.4);
+    border-radius:8px;
+    border:2px solid rgba(255,255,255,0.7);
+    box-shadow: inset 0px 0px 6px rgba(0,0,0,0.7);
+    transition:transform 400ms ease;
+}
+
+#settings-menu.hidden .main {
+    transform:scale(0.3, 0.3);
+}
+
+#settings-menu .title {
+    font-size:40px;
+    font-family:"Open Sans";
+    font-weight:600;
+    display:block;
+    text-align:left;
+    position:absolute;
+    margin-top:-98px;
+    margin-left:4px;
+    color:rgba(210,210,210);
+    text-shadow:2px 2px 6px rgba(0,0,0,0.6);
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+     -khtml-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
+}
+
+#settings-menu .title .game-icon {
+    line-height: 56px;
+    position: relative;
+}
+
+#settings-menu .tabs {
+    position:absolute;
+    width:100%;
+    height:30px;
+    text-align:left;
+    left:0;
+    margin-top:-42px;
+    font-size:26px;
+    font-family:"Open Sans";
+    text-shadow:2px 2px 6px rgba(0,0,0,0.6);
+    padding-left:6px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+     -khtml-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
+}
+
+#settings-menu .tab {
+    position:relative;
+    display:inline-block;
+    border-left:2px solid rgba(255,255,255,0.45);
+    border-top:2px solid rgba(255,255,255,0.45);
+    border-right:2px solid rgba(255,255,255,0.45);
+    padding:0px 6px 2px 6px;
+    border-top-left-radius:8px;
+    border-top-right-radius:8px;
+    cursor:pointer;
+    transition:background 300ms ease, border 300ms ease, color 300ms ease;
+    color:rgba(255,255,255,0.7);
+}
+
+#settings-menu .tab.active {
+    color:rgba(255,255,255,0.9);
+    border-color:rgba(255,255,255,0.7) !important;
+    font-weight:600;
+}
+
+#settings-menu .tab:hover {
+    background:rgba(255,255,255,0.9);
+    color:#000;
+}
+
+#settings-menu .tabs .tab .game-icon {
+    font-size: 33px;
+    position: relative;
+    top: 3px;
+    left: 0;
+    margin-right:-2px;
+}
+
+#settings-menu .close {
+    transition:opacity 400ms ease, transform 400ms ease;
+    position:absolute;
+    right:12px;
+    font-size:40px;
+    top:-56px;
+    color:#fff;
+    font-family:"Open Sans";
+    font-weight:700;
+    opacity:0.8;
+    text-shadow:0px 0px 6px #000;
+    z-index:9999;
+    cursor:pointer;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+     -khtml-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
+}
+
+#settings-menu .close:hover {
+    transform:scale(1.2);
+    opacity:1;
+}
+
+#settings-inner {
+    position: absolute;
+    left: 4px;
+    top: 4px;
+    right: 4px;
+    bottom: 4px;
+    font-family: "Open Sans";
+    overflow-y:auto;
+}
+
+button#setup-gamepad {
+    width: 100%;
+    font-size: 20px;
+    background: rgba(0,0,0,0.2);
+    color: #fff;
+    outline: none;
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 6px;
+    cursor: pointer;
+    transition:background 400ms ease, color 400ms ease;
+    padding:1px 0;
+    text-shadow:1px 1px 6px #000;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+     -khtml-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
+}
+
+button#setup-gamepad:hover {
+    background:rgba(255,255,255,0.9);
+    color:#000;
+}
+
+.bind-outer {
+    border-left: 1px solid rgba(255,255,255,0.5);
+    border-top: 1px solid rgba(255,255,255,0.5);
+    border-right: 1px solid rgba(255,255,255,0.5);
+    border-radius:6px;
+    color: #fff;
+    text-shadow:1px 1px 4px rgba(0,0,0,0.7);
+    transition:background 400ms ease, color 400ms ease;
+    cursor:pointer;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+     -khtml-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
+}
+
+.bind-outer:hover {
+    background:rgba(255,255,255,0.9);
+    color:#000;
+}
+
+.bind-outer.first:hover {
+    background:transparent;
+    color:#fff;
+    cursor:default;
+}
+
+span.bind {
+    width: calc(50% - 2px);
+    display: inline-block;
+    font-family: "Open Sans Condensed";
+    font-weight: 600;
+    font-size: 28px;
+}
+
+span.bind:nth-child(2) {
+        border-left: 1px solid rgba(255,255,255,0.5);
+}
+
+.bind-outer:last-child {
+    border-bottom: 1px solid rgba(255,255,255,0.5);  
+}
+
+.bind-title {
+    color:#fff;
+    font-weight: 600;
+    font-size: 24px;
+    margin-bottom:4px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+     -khtml-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
+}
+
+.tippy-box {
+    padding:0;
+    border:1px solid #000;
+    box-shadow: 0px 0px 2px inset #000000;
+    text-shadow:1px 1px 3px #161616;
+    font-family:"Open Sans";
+}
+
+.tippy-box[data-theme~='balances'] {
+    text-align:left;
+    border:2px solid #000;
+    border-radius:6px;
+    box-shadow:0px 0px 4px inset rgba(0,0,0,0.5), 0px 0px 4px rgba(0,0,0,0.85);
+}
+.tippy-box[data-animation=shift-away][data-state=hidden]{opacity:0}.tippy-box[data-animation=shift-away][data-state=hidden][data-placement^=top]{transform:translateY(10px)}.tippy-box[data-animation=shift-away][data-state=hidden][data-placement^=bottom]{transform:translateY(-10px)}.tippy-box[data-animation=shift-away][data-state=hidden][data-placement^=left]{transform:translateX(10px)}.tippy-box[data-animation=shift-away][data-state=hidden][data-placement^=right]{transform:translateX(-10px)}
+.tippy-box[data-animation=scale][data-placement^=top]{transform-origin:bottom}.tippy-box[data-animation=scale][data-placement^=bottom]{transform-origin:top}.tippy-box[data-animation=scale][data-placement^=left]{transform-origin:right}.tippy-box[data-animation=scale][data-placement^=right]{transform-origin:left}.tippy-box[data-animation=scale][data-state=hidden]{transform:scale(.5);opacity:0}
+.tippy-box[data-animation=shift-toward][data-state=hidden]{opacity:0}.tippy-box[data-animation=shift-toward][data-state=hidden][data-placement^=top]{transform:translateY(-10px)}.tippy-box[data-animation=shift-toward][data-state=hidden][data-placement^=bottom]{transform:translateY(10px)}.tippy-box[data-animation=shift-toward][data-state=hidden][data-placement^=left]{transform:translateX(-10px)}.tippy-box[data-animation=shift-toward][data-state=hidden][data-placement^=right]{transform:translateX(10px)}
+.tippy-box[data-animation=perspective][data-placement^=top]{transform-origin:bottom}.tippy-box[data-animation=perspective][data-placement^=top][data-state=visible]{transform:perspective(700px)}.tippy-box[data-animation=perspective][data-placement^=top][data-state=hidden]{transform:perspective(700px) translateY(8px) rotateX(60deg)}.tippy-box[data-animation=perspective][data-placement^=bottom]{transform-origin:top}.tippy-box[data-animation=perspective][data-placement^=bottom][data-state=visible]{transform:perspective(700px)}.tippy-box[data-animation=perspective][data-placement^=bottom][data-state=hidden]{transform:perspective(700px) translateY(-8px) rotateX(-60deg)}.tippy-box[data-animation=perspective][data-placement^=left]{transform-origin:right}.tippy-box[data-animation=perspective][data-placement^=left][data-state=visible]{transform:perspective(700px)}.tippy-box[data-animation=perspective][data-placement^=left][data-state=hidden]{transform:perspective(700px) translateX(8px) rotateY(-60deg)}.tippy-box[data-animation=perspective][data-placement^=right]{transform-origin:left}.tippy-box[data-animation=perspective][data-placement^=right][data-state=visible]{transform:perspective(700px)}.tippy-box[data-animation=perspective][data-placement^=right][data-state=hidden]{transform:perspective(700px) translateX(-8px) rotateY(60deg)}.tippy-box[data-animation=perspective][data-state=hidden]{opacity:0}
+
+#youtube {
+    user-select: none;
+}
+
+::-webkit-scrollbar {
+ width: 10px;
+ height: 10px;
+ scrollbar-width:thin;
+}
+::-webkit-button {
+ background: #0e0e10;
+}
+::-webkit-scrollbar-thumb {
+ background: linear-gradient(16deg, #333333 24%,#4f4f4f 86%);
+ border-radius:3px;
+ transition:background 300ms ease;
+}
+::-webkit-scrollbar-thumb:hover{
+ background: linear-gradient(13deg, #3d3d3d 24%,#696969 64%);
+}
+::-webkit-scrollbar-track{
+ background: #0e0e10;
+ border-radius: 3px;
+}
+
+        </style>
+        <link href="/assets/css/scratchcard.css" rel="stylesheet" type="text/css">
+        <link href="/assets/css/slots.css?00" rel="stylesheet" type="text/css">
+        <link href="/assets/css/game-icons.css?ddc" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300italic,400italic,700italic,300,400,700" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,300,400,700" rel="stylesheet" type="text/css">
+    </head>
+    <body>
+        <div id="message">Loading...</div>
+        
+        <canvas id="game" width="100%" height="100%"></canvas>
+        
+        <iframe id="youtube" type="text/html" width="640" height="390"
+  src="http://www.youtube.com/embed/M7lc1UVf-VE?enablejsapi=1"
+  frameborder="0" style="position:absolute;width:1280px;height:720px;display:none"></iframe>
+  
+        <div id="chatbox" class="hidden">
+            <div id="chatbox-in"></div>
+            <input type="text" id="chatbox-input">
+        </div>
+        
+        <div id="buttons">
+            <i class="game-icon game-icon-multiple-targets" id="but-cam"></i>
+            <i class="game-icon game-icon-cog" id="but-set"></i>
+        </div>
+        
+        <div id="paused" class="hidden" style="display:none"><span>The game has been paused<b>Browser window was hidden, it will take a moment to reload the game...</b></span></div>
+
+        <div id="gamepad-menu" class="hidden" style="display:none">
+            <span class="main">
+                <span id="gamepad-title"><i class="game-icon game-icon-console-controller"></i> Gamepad Detected</span>
+                <span class="small" id="gamepad-txt">Would you like to play using your controller?<br>Press any button on the controller to start.</span>
+                <button type="button" id="gamepad-no">
+                    or click here for <i class="game-icon game-icon-keyboard"></i> mouse and keyboard
+                </button>
+            </span>
+        </div>
+
+        <div id="settings-menu" class="hidden" style="display:none">
+            <span class="main">
+                <span class="title"><i class="game-icon game-icon-cog"></i> Settings</span>
+                <span class="close" id="settings-close">X</span>
+                <span class="tabs">
+                    <span class="tab" id="tab-ctrl"><i class="game-icon game-icon-console-controller"></i> Controls</span>
+                    <span class="tab" id="tab-audio"><i class="game-icon game-icon-speaker"></i> Audio</span>
+                </span>
+                <span id="settings-inner"></span>
+            </span>
+        </div>
+
+        <script src="/assets/js/popper.tippy.min.js"></script>
+        <script src="client.js?77777"></script>
+
+        <!-- Mobile touch controls -->
+        <style>
+        #mobile-controls {
+            display: none;
+            position: fixed;
+            left: 0; bottom: 0; right: 0;
+            pointer-events: none;
+            z-index: 8888;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .mob-btn {
+            position: absolute;
+            pointer-events: all;
+            background: rgba(0,0,0,0.35);
+            border: 2px solid rgba(255,255,255,0.55);
+            border-radius: 50%;
+            color: #fff;
+            font-size: 26px;
+            text-align: center;
+            line-height: 56px;
+            width: 60px;
+            height: 60px;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            transition: background 100ms;
+            text-shadow: 1px 1px 4px #000;
+        }
+        .mob-btn.pressed { background: rgba(255,255,255,0.45); }
+        #mob-up    { left: 100px; bottom: 130px; }
+        #mob-down  { left: 100px; bottom: 14px; }
+        #mob-left  { left: 30px;  bottom: 72px; }
+        #mob-right { left: 170px; bottom: 72px; }
+        #mob-attack { right: 130px; bottom: 90px; width: 70px; height: 70px; font-size: 30px; line-height: 66px; border-radius: 50%; background: rgba(200,40,40,0.5); }
+        #mob-use    { right: 30px; bottom: 90px; width: 70px; height: 70px; font-size: 30px; line-height: 66px; border-radius: 50%; background: rgba(40,120,200,0.5); }
+        #mob-sprint { left: 100px; bottom: 72px; width: 44px; height: 44px; font-size: 20px; line-height: 40px; background: rgba(80,80,80,0.4); }
+        </style>
+        <div id="mobile-controls">
+            <div class="mob-btn" id="mob-up">▲</div>
+            <div class="mob-btn" id="mob-down">▼</div>
+            <div class="mob-btn" id="mob-left">◀</div>
+            <div class="mob-btn" id="mob-right">▶</div>
+            <div class="mob-btn" id="mob-sprint">⚡</div>
+            <div class="mob-btn" id="mob-attack">⚔</div>
+            <div class="mob-btn" id="mob-use">E</div>
+        </div>
+        <script>
+        (function() {
+            var isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+            if (!isTouchDevice) return;
+            document.getElementById('mobile-controls').style.display = 'block';
+
+            function sendKey(cmd, pos) {
+                if (window.gameServer && window.gameServer.readyState === 1) {
+                    window.gameServer.send(JSON.stringify({ type: 'input', command: cmd, key_position: pos }));
+                }
+                if (window._G && window._G.LocalName && window._G.playerData && window._G.playerData[window._G.LocalName]) {
+                    if (pos === 'down') {
+                        window._G.playerData[window._G.LocalName].input[cmd] = performance.now();
+                    } else {
+                        window._G.playerData[window._G.LocalName].input[cmd] = undefined;
+                    }
+                }
+            }
+
+            var btns = {
+                'mob-up':     'U',
+                'mob-down':   'D',
+                'mob-left':   'L',
+                'mob-right':  'R',
+                'mob-sprint': 'SHIFT',
+                'mob-attack': 'V',
+                'mob-use':    'E'
+            };
+
+            Object.keys(btns).forEach(function(id) {
+                var el = document.getElementById(id);
+                var cmd = btns[id];
+                el.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    el.classList.add('pressed');
+                    sendKey(cmd, 'down');
+                }, { passive: false });
+                el.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    el.classList.remove('pressed');
+                    sendKey(cmd, 'up');
+                }, { passive: false });
+                el.addEventListener('touchcancel', function(e) {
+                    e.preventDefault();
+                    el.classList.remove('pressed');
+                    sendKey(cmd, 'up');
+                }, { passive: false });
+            });
+        })();
+    </body>
+</html>
